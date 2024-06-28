@@ -1,52 +1,43 @@
-#include <stdarg.h>
-#include <stdio.h>
-
 int _printf(const char *format,...) {
     va_list args;
+    int count = 0;
+
+    // Initialize the argument list
     va_start(args, format);
 
-    int count = 0; // To keep track of the number of characters printed
+    // Iterate over the format string
+    for (const char *ptr = format; *ptr!= '\0'; ptr++) {
+        // Check for conversion specifier
+        if (*ptr == '%') {
+            ptr++; // Move past the '%' character
 
-    for (const char *p = format; *p!= '\0'; p++) {
-        if (*p == '%') {
-            p++; // Move past the '%' character
-            switch (*p) {
-                case 'c': {
-                    char ch = va_arg(args, int); // char argument passed as int
-                    putchar(ch);
-                    count++;
-                    break;
+            // Handle % character
+            if (*ptr == '%') {
+                write(1, "%", 1); // Write the '%' character
+                count++;
+            }
+            // Handle 'c' character
+            else if (*ptr == 'c') {
+                char ch = (char)va_arg(args, int); // Cast to char since va_arg returns int
+                write(1, &ch, 1); // Write the character
+                count++;
+            }
+            // Handle 's' character
+            else if (*ptr == 's') {
+                const char *str = va_arg(args, const char *);
+                for (; *str; str++, count++) {
+                    write(1, str, 1); // Write each character of the string
                 }
-                case 's': {
-                    const char *str = va_arg(args, const char *);
-                    while (*str && *str!= ' ') { // Stop at space or null terminator
-                        putchar(*str++);
-                        count++;
-                    }
-                    break;
-                }
-                case '%': {
-                    putchar('%');
-                    count++;
-                    break;
-                }
-                default:
-                    break; // Ignore unknown specifiers
             }
         } else {
-            putchar(*p);
+            write(1, ptr, 1); // Write non-specifier characters directly
             count++;
         }
     }
 
+    // Clean up the argument list
     va_end(args);
+
     return count;
 }
 
-int main() {
-    int num = 42;
-    char name[] = "Alice";
-    printf("Number: %d, Name: %s\n", num, name);
-    _printf("Character: %c, String: %s, Percent: %%\n", 'A', name, "%");
-    return 0;
-}
