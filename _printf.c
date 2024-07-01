@@ -1,5 +1,6 @@
 #include "main.h"
-
+#include <stddef.h>
+#include <stdarg.h>
 
 int _print(const char *format, ...)
 {
